@@ -50,38 +50,42 @@
 
         <hr style="border:0;border-top:1px solid #20283a;margin:18px 0" />
 
-        <div class="controls">
+        <div class=\"controls\">
           <label>Max width (px)
-            <input type="number" id="maxWidth" min="64" step="16" value="1600" />
+            <input type=\"number\" id=\"maxWidth\" min=\"64\" step=\"16\" value=\"1600\" />
           </label>
           <label>Max height (px)
-            <input type="number" id="maxHeight" min="64" step="16" value="1600" />
+            <input type=\"number\" id=\"maxHeight\" min=\"64\" step=\"16\" value=\"1600\" />
           </label>
           <label>Output format
-            <select id="format">
-              <option value="webp">WebP (small & fast)</option>
-              <option value="avif">AVIF (smallest)</option>
-              <option value="jpeg">JPEG</option>
-              <option value="png">PNG</option>
+            <select id=\"format\">
+              <option value=\"webp\">WebP (small & fast)</option>
+              <option value=\"avif\">AVIF (smallest)</option>
+              <option value=\"jpeg\">JPEG</option>
+              <option value=\"png\">PNG</option>
             </select>
           </label>
           <label>Quality
-            <input type="range" id="quality" min="1" max="100" value="82" />
+            <input type=\"range\" id=\"quality\" min=\"1\" max=\"100\" value=\"82\" />
           </label>
           <label>Background
-            <select id="bg">
-              <option value="transparent">Keep transparency</option>
-              <option value="white">White</option>
-              <option value="black">Black</option>
-              <option value="custom">Custom…</option>
+            <select id=\"bg\">
+              <option value=\"transparent\">Keep transparency</option>
+              <option value=\"white\">White</option>
+              <option value=\"black\">Black</option>
+              <option value=\"custom\">Custom…</option>
             </select>
           </label>
-          <label id="customColorWrap" class="hidden">Canvas color
-            <input type="color" id="customColor" value="#ffffff" />
+          <label id=\"customColorWrap\" class=\"hidden\">Canvas color
+            <input type=\"color\" id=\"customColor\" value=\"#ffffff\" />
+          </label>
+          <label>Remove background (people)
+            <input type=\"checkbox\" id=\"rmBg\" />
+            <span class=\"muted\">On-device via MediaPipe</span>
           </label>
         </div>
 
-        <div class="row" style="margin-top:12px">
+        <div class=\"row\" style="margin-top:12px">
           <button class="btn" id="runBtn" disabled>Process images</button>
           <button class="btn" id="zipBtn" disabled>Download ZIP</button>
           <span class="muted" id="note">All work happens in your browser.</span>
@@ -105,6 +109,9 @@
     </div>
   </div>
 
+  <!-- MediaPipe (non-module builds) -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
   <!-- Only dependency: JSZip (UMD) for broad browser support -->
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script>
@@ -124,11 +131,26 @@
     const bg = $('bg');
     const customColorWrap = $('customColorWrap');
     const customColor = $('customColor');
+    const rmBg = $('rmBg');
     const note = $('note');
 
     let files = [];
     let results = [];
     let zip;
+
+    // MediaPipe SelfieSegmentation instance (if available)
+    let selfieSeg = null;
+    (async function initSeg(){
+      if (window.SelfieSegmentation){
+        selfieSeg = new SelfieSegmentation({ locateFile: (f)=> `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${f}` });
+        selfieSeg.setOptions({ modelSelection: 1 });
+        if (typeof selfieSeg.initialize === 'function') {
+          try { await selfieSeg.initialize(); } catch(e) { console.warn('Segmentation init', e); }
+        }
+      } else {
+        if (rmBg) { rmBg.disabled = true; }
+      }
+    })();
 
     // ===== Helpers =====
     const ACCEPTED_EXT = ["jpg","jpeg","png","webp","avif","heic","heif","gif","bmp"];
@@ -219,6 +241,35 @@
       return new Promise((resolve)=> canvas.toBlob(b=>resolve(b), mime, q));
     }
 
+    function applyPeopleMatteToCanvas(baseCanvas){
+      return new Promise((resolve, reject)=>{
+        if (!selfieSeg) return resolve(baseCanvas);
+        const w = baseCanvas.width, h = baseCanvas.height;
+        const tmpImg = new Image();
+        tmpImg.onload = ()=>{
+          const maskCanvas = document.createElement('canvas');
+          maskCanvas.width = w; maskCanvas.height = h;
+          const mc = maskCanvas.getContext('2d');
+          selfieSeg.onResults((res)=>{
+            try{
+              mc.drawImage(res.segmentationMask, 0, 0, w, h);
+              const mask = mc.getImageData(0,0,w,h);
+              const ctx = baseCanvas.getContext('2d');
+              const imgData = ctx.getImageData(0,0,w,h);
+              const p = imgData.data, m = mask.data;
+              const t = 128;
+              for (let i=0;i<p.length;i+=4){ p[i+3] = (m[i] > t) ? 255 : 0; }
+              ctx.putImageData(imgData,0,0);
+              resolve(baseCanvas);
+            }catch(e){ console.error(e); resolve(baseCanvas); }
+          });
+          selfieSeg.send({ image: tmpImg });
+        };
+        tmpImg.onerror = ()=> resolve(baseCanvas);
+        tmpImg.src = baseCanvas.toDataURL('image/png');
+      });
+    }
+
     runBtn.addEventListener('click', async ()=>{
       if(!files.length) return;
       runBtn.disabled = true; zipBtn.disabled = true; results = []; zip = new JSZip();
@@ -244,12 +295,23 @@
           const img = await loadHTMLImageFromFile(f);
 
           const { w, h } = fitSize(img.naturalWidth || img.width, img.naturalHeight || img.height, maxW, maxH);
+          // work at full resolution for better mattes, then resize
+          const work = document.createElement('canvas');
+          work.width = img.naturalWidth || img.width; work.height = img.naturalHeight || img.height;
+          const wc = work.getContext('2d');
+          wc.imageSmoothingQuality = 'high';
+          wc.drawImage(img, 0, 0);
+
+          if (rmBg && rmBg.checked){
+            status.textContent = 'Removing background…';
+            await applyPeopleMatteToCanvas(work);
+          }
+
           const canvas = document.createElement('canvas');
           canvas.width = w; canvas.height = h;
           const ctx = canvas.getContext('2d');
           ctx.imageSmoothingQuality = 'high';
 
-          // background fill for JPEG (opaque) or when user requested background
           const needsOpaque = (outFmt==='jpeg' || bg.value!=='transparent');
           if (needsOpaque){
             let color = '#00000000';
@@ -259,7 +321,7 @@
             ctx.fillStyle = color; ctx.fillRect(0,0,w,h);
           }
 
-          ctx.drawImage(img, 0, 0, w, h);
+          ctx.drawImage(work, 0, 0, w, h);
 
           status.textContent = 'Encoding…';
           const blob = await canvasEncode(canvas, outFmt, q);
