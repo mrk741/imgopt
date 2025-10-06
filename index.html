@@ -3,49 +3,49 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Background Remover • Bulk Resizer & Optimizer</title>
-  <link rel="icon" href="data:;base64,=" />
+  <title>Bulk Image Resizer & Format Converter</title>
   <style>
     :root { --bg:#0b0d12; --card:#131722; --ink:#e8ecf1; --muted:#9aa4b2; }
-    * { box-sizing:border-box; }
-    body { margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter; background:var(--bg); color:var(--ink); }
-    header { padding:28px 20px; display:flex; gap:14px; align-items:center; justify-content:center; flex-wrap:wrap; }
-    header h1 { margin:0; font-size:20px; font-weight:700; letter-spacing:0.2px; }
-    .pill { background:#1d2433; border:1px solid #2a3347; padding:6px 10px; border-radius:999px; color:var(--muted); font-size:12px; }
-    .wrap { max-width:1100px; margin:0 auto; padding:0 18px 60px; }
-    .card { background:var(--card); border:1px solid #20283a; border-radius:18px; padding:18px; }
-    .grid { display:grid; gap:18px; grid-template-columns:1fr; }
-    @media (min-width:980px){ .grid { grid-template-columns: 420px 1fr; } }
-    .drop { border:1.5px dashed #33415c; border-radius:14px; padding:18px; text-align:center; color:var(--muted); }
-    .drop input { display:none; }
-    .btn { background:#2b6ef3; color:#fff; border:0; padding:10px 14px; border-radius:12px; font-weight:600; cursor:pointer; }
-    .btn:disabled { opacity:.6; cursor:not-allowed; }
-    .controls { display:grid; gap:12px; grid-template-columns:repeat(2,1fr); }
-    .controls label { display:grid; gap:6px; font-size:12px; color:var(--muted); }
-    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .thumbs { display:grid; gap:12px; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); }
-    .thumb { background:#0f1320; border:1px solid #20283a; border-radius:12px; padding:10px; display:grid; gap:8px; }
-    .thumb img { width:100%; height:120px; object-fit:contain; background:#0b0f1a; border-radius:8px; }
-    .bar { height:6px; background:#111727; border-radius:999px; overflow:hidden; }
-    .bar > i { display:block; height:100%; width:0%; background:#2b6ef3; transition:width .25s ease; }
-    .muted { color:var(--muted); font-size:12px; }
-    select, input[type="number"], input[type="range"] { background:#0f1320; border:1px solid #20283a; color:var(--ink); border-radius:10px; padding:8px 10px; }
-    .footer { margin-top:12px; color:#7c8798; font-size:12px; }
-    .tag { font-size:11px; background:#0d1220; border:1px solid #1d2740; color:#a6b0c0; padding:2px 6px; border-radius:999px; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter;background:var(--bg);color:var(--ink)}
+    header{padding:28px 20px;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap}
+    header h1{margin:0;font-size:20px;font-weight:700;letter-spacing:.2px}
+    .pill{background:#1d2433;border:1px solid #2a3347;padding:6px 10px;border-radius:999px;color:var(--muted);font-size:12px}
+    .wrap{max-width:1100px;margin:0 auto;padding:0 18px 60px}
+    .card{background:var(--card);border:1px solid #20283a;border-radius:18px;padding:18px}
+    .grid{display:grid;gap:18px;grid-template-columns:1fr}
+    @media(min-width:980px){.grid{grid-template-columns:420px 1fr}}
+    .drop{border:1.5px dashed #33415c;border-radius:14px;padding:18px;text-align:center;color:var(--muted)}
+    .btn{background:#2b6ef3;color:#fff;border:0;padding:10px 14px;border-radius:12px;font-weight:600;cursor:pointer}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+    .controls{display:grid;gap:12px;grid-template-columns:repeat(2,1fr)}
+    .controls label{display:grid;gap:6px;font-size:12px;color:var(--muted)}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .thumbs{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+    .thumb{background:#0f1320;border:1px solid #20283a;border-radius:12px;padding:10px;display:grid;gap:8px}
+    .thumb img{width:100%;height:120px;object-fit:contain;background:#0b0f1a;border-radius:8px}
+    .bar{height:6px;background:#111727;border-radius:999px;overflow:hidden}
+    .bar>i{display:block;height:100%;width:0%;background:#2b6ef3;transition:width .25s ease}
+    .muted{color:var(--muted);font-size:12px}
+    select,input[type=number],input[type=range]{background:#0f1320;border:1px solid #20283a;color:var(--ink);border-radius:10px;padding:8px 10px}
+    .footer{margin-top:12px;color:#7c8798;font-size:12px}
+    .tag{font-size:11px;background:#0d1220;border:1px solid #1d2740;color:#a6b0c0;padding:2px 6px;border-radius:999px}
+    .hidden{display:none}
   </style>
 </head>
 <body>
   <header>
-    <h1>Background Remover + Bulk Resizer/Optimizer</h1>
-    <span class="pill">Client-side • Free • No uploads</span>
+    <h1>Bulk Image Resizer & Format Converter</h1>
+    <span class="pill">Free • Client‑side • No uploads</span>
   </header>
 
   <div class="wrap">
     <div class="grid">
       <div class="card">
         <div class="drop" id="drop">
-          <p><strong>Drop images here</strong> or <label class="btn"><input id="file" type="file" accept="image/*" multiple />Browse</label></p>
-          <p class="muted">PNG, JPG, WebP, AVIF • dozens at a time (browser-dependent)</p>
+          <p><strong>Drop images here</strong> or <label class="btn"><input id="file" type="file" accept="image/*" multiple class="hidden"/>Browse</label></p>
+          <p class="muted">PNG, JPG, WebP, AVIF, HEIC* • dozens at a time (browser‑dependent)</p>
+          <p class="muted">*HEIC/HEIF requires a browser/OS with built‑in support</p>
         </div>
 
         <hr style="border:0;border-top:1px solid #20283a;margin:18px 0" />
@@ -59,8 +59,8 @@
           </label>
           <label>Output format
             <select id="format">
-              <option value="webp">WebP (fast, small)</option>
-              <option value="avif">AVIF (smallest, newer)</option>
+              <option value="webp">WebP (small & fast)</option>
+              <option value="avif">AVIF (smallest)</option>
               <option value="jpeg">JPEG</option>
               <option value="png">PNG</option>
             </select>
@@ -68,27 +68,29 @@
           <label>Quality
             <input type="range" id="quality" min="1" max="100" value="82" />
           </label>
-          <label>Background removal
-            <select id="bgMode">
-              <option value="people">People (on-device)</option>
-              <option value="none">Disabled</option>
+          <label>Background
+            <select id="bg">
+              <option value="transparent">Keep transparency</option>
+              <option value="white">White</option>
+              <option value="black">Black</option>
+              <option value="custom">Custom…</option>
             </select>
           </label>
-          <label>Canvas color (if not transparent)
-            <input type="color" id="canvasColor" value="#000000" />
+          <label id="customColorWrap" class="hidden">Canvas color
+            <input type="color" id="customColor" value="#ffffff" />
           </label>
         </div>
 
         <div class="row" style="margin-top:12px">
           <button class="btn" id="runBtn" disabled>Process images</button>
           <button class="btn" id="zipBtn" disabled>Download ZIP</button>
-          <span class="muted" id="supportNote">All work happens in your browser.</span>
+          <span class="muted" id="note">All work happens in your browser.</span>
         </div>
 
         <div class="footer">
-          <span class="tag">MediaPipe</span>
           <span class="tag">Canvas encoders</span>
           <span class="tag">JSZip</span>
+          <span class="tag">No modules / No wasm</span>
         </div>
       </div>
 
@@ -103,12 +105,10 @@
     </div>
   </div>
 
-  <script type="module">
-    // --- lightweight deps (no worker pool / no SharedArrayBuffer needed) ---
-    import { SelfieSegmentation } from 'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/+esm';
-    import JSZip from 'https://cdn.jsdelivr.net/npm/jszip/+esm';
-
-    // --- Elements ---
+  <!-- Only dependency: JSZip (UMD) for broad browser support -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script>
+    // ===== Elements =====
     const $ = (id)=>document.getElementById(id);
     const fileInput = $('file');
     const drop = $('drop');
@@ -121,66 +121,65 @@
     const maxHeight = $('maxHeight');
     const formatSel = $('format');
     const quality = $('quality');
-    const bgMode = $('bgMode');
-    const canvasColor = $('canvasColor');
-    const supportNote = $('supportNote');
+    const bg = $('bg');
+    const customColorWrap = $('customColorWrap');
+    const customColor = $('customColor');
+    const note = $('note');
 
     let files = [];
     let results = [];
     let zip;
 
-    // --- helpers ---
-    const isCrossOriginIsolated = window.crossOriginIsolated === true;
+    // ===== Helpers =====
+    const ACCEPTED_EXT = ["jpg","jpeg","png","webp","avif","heic","heif","gif","bmp"];
+    const isLikelyImage = (file) => {
+      if (/^image\//.test(file.type)) return true;
+      const ext = (file.name.split('.').pop() || '').toLowerCase();
+      return ACCEPTED_EXT.includes(ext);
+    };
 
-    // feature probe for output formats via canvas.toBlob
-    async function supportsType(mime) {
-      const c = document.createElement('canvas');
-      c.width = c.height = 2;
-      return await new Promise((res)=> c.toBlob(b=>res(!!b), mime, 0.8));
+    function show(el){ el.classList.remove('hidden'); }
+    function hide(el){ el.classList.add('hidden'); }
+
+    async function supportsType(mime){
+      try{
+        const c = document.createElement('canvas');
+        c.width=c.height=2;
+        return await new Promise((res)=> c.toBlob(b=>res(!!b), mime, 0.8));
+      }catch{ return false; }
     }
 
     (async ()=>{
       const avif = await supportsType('image/avif');
       const webp = await supportsType('image/webp');
-      // Nudge user if a chosen format isn't supported
-      if (!avif) {
-        const opt = [...formatSel.options].find(o=>o.value==='avif');
-        if (opt) opt.textContent += ' (not supported in this browser)';
-      }
-      if (!webp) {
-        const opt = [...formatSel.options].find(o=>o.value==='webp');
-        if (opt) opt.textContent += ' (not supported in this browser)';
-      }
-      if (!webp && !avif) {
-        supportNote.textContent = 'Tip: For best results use Chrome/Edge (WebP/AVIF).';
-      }
+      if(!avif){ [...formatSel.options].find(o=>o.value==='avif').text += ' (not supported)'; }
+      if(!webp){ [...formatSel.options].find(o=>o.value==='webp').text += ' (not supported)'; }
+      if(!webp && !avif){ note.textContent = 'Tip: Chrome/Edge support WebP/AVIF for smaller files.'; }
     })();
 
-    // --- Drag & drop ---
-    const ACCEPTED_EXT = ["jpg","jpeg","png","webp","avif","heic","heif","gif","bmp"];
-    const isLikelyImage = (file) => {
-      if (/^image\//.test(file.type)) return true; // normal case
-      // Some environments (e.g., WhatsApp exports) set type to octet-stream or empty.
-      const ext = (file.name.split('.').pop() || '').toLowerCase();
-      return ACCEPTED_EXT.includes(ext);
-    };
-    const accept = (items) => {
+    // ===== Drag & Drop + Browse =====
+    function accept(items){
       const picked = Array.from(items).filter(isLikelyImage);
-      if (!picked.length) {
-        alert('No images detected in selection. Try picking PNG/JPG/WebP/AVIF files.');
-        return;
-      }
+      if (!picked.length){ alert('No images detected. Pick PNG/JPG/WebP/AVIF files.'); return; }
       files = [...files, ...picked];
       countEl.textContent = files.length + ' items';
       runBtn.disabled = files.length === 0;
       renderQueue();
-    };
-    fileInput.addEventListener('change', (e)=>accept(e.target.files));
-    ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault(); drop.style.borderColor='#2b6ef3'}));
-    ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault(); drop.style.borderColor='#33415c'}));
-    drop.addEventListener('drop', (e) => accept(e.dataTransfer.files));
+    }
 
-    function renderQueue() {
+    fileInput.addEventListener('change', (e)=>accept(e.target.files));
+
+    // Prevent default to enable drop
+    ;['dragenter','dragover','dragleave','drop'].forEach(ev=>{
+      drop.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); });
+    });
+    drop.addEventListener('dragenter', ()=> drop.style.borderColor='#2b6ef3');
+    drop.addEventListener('dragleave', ()=> drop.style.borderColor='#33415c');
+    drop.addEventListener('drop', (e)=>{ drop.style.borderColor='#33415c'; accept(e.dataTransfer.files); });
+    // Clicking the drop zone opens file picker (for mobile/iOS where DnD isn't supported)
+    drop.addEventListener('click', ()=> fileInput.click());
+
+    function renderQueue(){
       thumbs.innerHTML = files.map((f,i)=>`
         <div class="thumb" data-i="${i}">
           <div><img id="img-${i}" alt="preview" /></div>
@@ -190,147 +189,96 @@
       `).join('');
       files.forEach((f,i)=>{
         const reader = new FileReader();
-        reader.onload = ()=> { const img=document.getElementById('img-'+i); if(img) img.src=reader.result; };
+        reader.onload = ()=>{ const img = $('img-'+i); if(img) img.src = reader.result; };
         reader.readAsDataURL(f);
       });
     }
 
-    // --- Background removal (people) ---
-    const selfieSeg = new SelfieSegmentation({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`});
-    selfieSeg.setOptions({ modelSelection: 1 });
-    await selfieSeg.initialize();
+    bg.addEventListener('change', ()=>{
+      if (bg.value === 'custom') show(customColorWrap); else hide(customColorWrap);
+    });
 
-    async function removeBgForPeople(imageBitmap) {
-      const w = imageBitmap.width, h = imageBitmap.height;
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(imageBitmap, 0, 0);
-      const frame = await createImageBitmap(canvas);
-
-      return new Promise((resolve) => {
-        selfieSeg.onResults((res)=>{
-          const c = canvas.getContext('2d');
-          // draw mask
-          const maskCanvas = document.createElement('canvas');
-          maskCanvas.width = w; maskCanvas.height = h;
-          const mc = maskCanvas.getContext('2d');
-          mc.drawImage(res.segmentationMask, 0, 0, w, h);
-          const mask = mc.getImageData(0,0,w,h);
-
-          // composite: set alpha from mask (keep foreground)
-          const imgData = c.getImageData(0,0,w,h);
-          const p = imgData.data, m = mask.data;
-          const t = 128;
-          for(let i=0;i<p.length;i+=4){ p[i+3] = (m[i] > t) ? 255 : 0; }
-          c.putImageData(imgData,0,0);
-          resolve(canvas);
-        });
-        selfieSeg.send({ image: frame });
-      });
-    }
-
-    // --- Resize + encode using Canvas.toBlob (no wasm, no COEP/COOP) ---
-    function fitSize(w, h, maxW, maxH){
+    // ===== Image Pipeline (no modules) =====
+    function fitSize(w,h,maxW,maxH){
       const r = Math.min(maxW / w, maxH / h, 1);
       return { w: Math.max(1, Math.round(w*r)), h: Math.max(1, Math.round(h*r)) };
     }
 
-    async function canvasEncode(srcCanvas, type, q01){
-      const mime = {
-        jpeg: 'image/jpeg',
-        png:  'image/png',
-        webp: 'image/webp',
-        avif: 'image/avif'
-      }[type] || 'image/png';
-
-      // if browser can't encode requested type, gracefully fall back
-      const can = await supportsType(mime);
-      const outType = can ? mime : 'image/png';
-
-      return new Promise((resolve)=> srcCanvas.toBlob(b=>resolve(b), outType, q01));
+    function loadHTMLImageFromFile(file){
+      return new Promise((resolve,reject)=>{
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = ()=>{ URL.revokeObjectURL(url); resolve(img); };
+        img.onerror = (e)=>{ URL.revokeObjectURL(url); reject(e); };
+        img.src = url;
+      });
     }
 
-    async function loadImageBitmap(file){
-      try { return await createImageBitmap(file); }
-      catch {
-        // Safari fallback
-        return await new Promise((resolve, reject)=>{
-          const img = new Image();
-          img.onload = ()=> resolve(createImageBitmap(img));
-          img.onerror = reject;
-          img.src = URL.createObjectURL(file);
-        });
-      }
+    function canvasEncode(canvas, type, q){
+      const mime = (type==='jpeg')?'image/jpeg':(type==='png')?'image/png':(type==='avif')?'image/avif':'image/webp';
+      return new Promise((resolve)=> canvas.toBlob(b=>resolve(b), mime, q));
     }
 
-    // --- Pipeline ---
     runBtn.addEventListener('click', async ()=>{
-      if (!files.length) return;
+      if(!files.length) return;
       runBtn.disabled = true; zipBtn.disabled = true; results = []; zip = new JSZip();
       prog.style.width = '0%';
 
       const maxW = +maxWidth.value, maxH = +maxHeight.value;
-      const outFmt = formatSel.value;
+      let outFmt = formatSel.value;
       const q = +quality.value / 100;
-      const doBg = bgMode.value !== 'none';
+
+      // Fallback if chosen format isn't supported
+      const mimeWanted = (outFmt==='jpeg')?'image/jpeg':(outFmt==='png')?'image/png':(outFmt==='avif')?'image/avif':'image/webp';
+      const supported = await (async()=>{
+        const c = document.createElement('canvas'); c.width=c.height=2;
+        return await new Promise(res=> c.toBlob(b=>res(!!b), mimeWanted, q));
+      })();
+      if (!supported) outFmt = 'png';
 
       let done = 0;
-      for (const [i, f] of files.entries()) {
-        const status = document.getElementById('status-'+i);
-        try {
+      for (const [i,f] of files.entries()){
+        const status = $('status-'+i);
+        try{
           status.textContent = 'Reading…';
-          const bmp = await loadImageBitmap(f);
+          const img = await loadHTMLImageFromFile(f);
 
-          // draw source to canvas
-          let work = document.createElement('canvas');
-          work.width = bmp.width; work.height = bmp.height;
-          let c = work.getContext('2d');
-          c.imageSmoothingQuality = 'high';
-          c.drawImage(bmp, 0, 0);
+          const { w, h } = fitSize(img.naturalWidth || img.width, img.naturalHeight || img.height, maxW, maxH);
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.imageSmoothingQuality = 'high';
 
-          if (doBg) {
-            status.textContent = 'Removing background…';
-            work = await removeBgForPeople(bmp);
-            c = work.getContext('2d');
+          // background fill for JPEG (opaque) or when user requested background
+          const needsOpaque = (outFmt==='jpeg' || bg.value!=='transparent');
+          if (needsOpaque){
+            let color = '#00000000';
+            if (bg.value==='white') color = '#ffffff';
+            else if (bg.value==='black') color = '#000000';
+            else if (bg.value==='custom') color = customColor.value;
+            ctx.fillStyle = color; ctx.fillRect(0,0,w,h);
           }
 
-          // fit into bounding box
-          const { w, h } = fitSize(work.width, work.height, maxW, maxH);
-          const out = document.createElement('canvas');
-          out.width = w; out.height = h;
-          const oc = out.getContext('2d');
-          oc.imageSmoothingQuality = 'high';
-          // fill canvas color if target is opaque format
-          const opaque = (outFmt === 'jpeg');
-          if (opaque) { oc.fillStyle = canvasColor.value; oc.fillRect(0,0,w,h); }
-          oc.drawImage(work, 0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
 
-          status.textContent = 'Optimizing…';
-          const blob = await canvasEncode(out, outFmt, q);
-
-          const ext = (blob.type.includes('jpeg')||outFmt==='jpeg')?'jpg':blob.type.split('/')[1]||outFmt;
+          status.textContent = 'Encoding…';
+          const blob = await canvasEncode(canvas, outFmt, q);
+          const ext = (blob && blob.type.includes('jpeg'))?'jpg':(blob && blob.type.split('/')[1]) || outFmt;
           const name = f.name.replace(/\.[^.]+$/, '') + '.' + ext;
           zip.file(name, blob);
-          results.push({ name, blob });
 
           status.textContent = 'Done';
-        } catch (e) {
-          console.error(e);
-          status.textContent = 'Failed';
-        } finally {
-          done++;
-          prog.style.width = ((done/files.length)*100).toFixed(1) + '%';
-        }
+        }catch(err){ console.error(err); status.textContent = 'Failed'; }
+        finally{ done++; prog.style.width = ((done/files.length)*100).toFixed(1)+'%'; }
       }
 
-      zipBtn.disabled = results.length === 0;
+      zipBtn.disabled = false;
       runBtn.disabled = false;
     });
 
     zipBtn.addEventListener('click', async ()=>{
       if (!zip) return;
-      const blob = await zip.generateAsync({type:'blob'});
+      const blob = await zip.generateAsync({ type:'blob' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = 'processed-images.zip';
