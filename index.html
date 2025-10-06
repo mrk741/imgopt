@@ -3,19 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Bulk Image Resizer & Format Converter</title>
+  <title>Background Remover • Bulk Image Optimizer</title>
+  <link rel="icon" href="data:;base64,=" />
   <style>
     :root { --bg:#0b0d12; --card:#131722; --ink:#e8ecf1; --muted:#9aa4b2; }
     *{box-sizing:border-box}
     body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter;background:var(--bg);color:var(--ink)}
-    header{padding:28px 20px;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap}
-    header h1{margin:0;font-size:20px;font-weight:700;letter-spacing:.2px}
-    .pill{background:#1d2433;border:1px solid #2a3347;padding:6px 10px;border-radius:999px;color:var(--muted);font-size:12px}
+    a{color:#4b82ff;text-decoration:none}
+    header{padding:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#0f1320;border-bottom:1px solid #1e2332}
+    header h1{margin:0;font-size:20px;font-weight:700}
+    nav a{margin-left:16px;font-size:14px;color:var(--muted)}
     .wrap{max-width:1100px;margin:0 auto;padding:0 18px 60px}
-    .card{background:var(--card);border:1px solid #20283a;border-radius:18px;padding:18px}
+    .card{background:var(--card);border:1px solid #20283a;border-radius:18px;padding:18px;margin-top:18px}
     .grid{display:grid;gap:18px;grid-template-columns:1fr}
     @media(min-width:980px){.grid{grid-template-columns:420px 1fr}}
-    .drop{border:1.5px dashed #33415c;border-radius:14px;padding:18px;text-align:center;color:var(--muted)}
+    .drop{border:1.5px dashed #33415c;border-radius:14px;padding:18px;text-align:center;color:var(--muted);cursor:pointer}
     .btn{background:#2b6ef3;color:#fff;border:0;padding:10px 14px;border-radius:12px;font-weight:600;cursor:pointer}
     .btn:disabled{opacity:.6;cursor:not-allowed}
     .controls{display:grid;gap:12px;grid-template-columns:repeat(2,1fr)}
@@ -28,73 +30,73 @@
     .bar>i{display:block;height:100%;width:0%;background:#2b6ef3;transition:width .25s ease}
     .muted{color:var(--muted);font-size:12px}
     select,input[type=number],input[type=range]{background:#0f1320;border:1px solid #20283a;color:var(--ink);border-radius:10px;padding:8px 10px}
-    .footer{margin-top:12px;color:#7c8798;font-size:12px}
+    #qualityVal{font-weight:600;margin-left:6px;color:#4b82ff}
+    .footer{margin-top:12px;color:#7c8798;font-size:12px;text-align:center}
     .tag{font-size:11px;background:#0d1220;border:1px solid #1d2740;color:#a6b0c0;padding:2px 6px;border-radius:999px}
     .hidden{display:none}
   </style>
 </head>
 <body>
   <header>
-    <h1>Bulk Image Resizer & Format Converter</h1>
-    <span class="pill">Free • Client‑side • No uploads</span>
+    <h1>Background Remover + Bulk Optimizer</h1>
+    <nav>
+      <a href="about.html">About</a>
+      <a href="help.html">Help</a>
+    </nav>
   </header>
 
   <div class="wrap">
     <div class="grid">
       <div class="card">
         <div class="drop" id="drop">
-          <p><strong>Drop images here</strong> or <label class="btn"><input id="file" type="file" accept="image/*" multiple class="hidden"/>Browse</label></p>
-          <p class="muted">PNG, JPG, WebP, AVIF, HEIC* • dozens at a time (browser‑dependent)</p>
-          <p class="muted">*HEIC/HEIF requires a browser/OS with built‑in support</p>
+          <p><strong>Drop images here</strong> or click to browse</p>
+          <input id="file" type="file" accept="image/*" multiple class="hidden" />
+          <p class="muted">PNG, JPG, WebP, AVIF • all processed locally</p>
         </div>
 
         <hr style="border:0;border-top:1px solid #20283a;margin:18px 0" />
 
-        <div class=\"controls\">
+        <div class="controls">
           <label>Max width (px)
-            <input type=\"number\" id=\"maxWidth\" min=\"64\" step=\"16\" value=\"1600\" />
+            <input type="number" id="maxWidth" min="64" step="16" value="1600" />
           </label>
           <label>Max height (px)
-            <input type=\"number\" id=\"maxHeight\" min=\"64\" step=\"16\" value=\"1600\" />
+            <input type="number" id="maxHeight" min="64" step="16" value="1600" />
           </label>
           <label>Output format
-            <select id=\"format\">
-              <option value=\"webp\">WebP (small & fast)</option>
-              <option value=\"avif\">AVIF (smallest)</option>
-              <option value=\"jpeg\">JPEG</option>
-              <option value=\"png\">PNG</option>
+            <select id="format">
+              <option value="webp">WebP</option>
+              <option value="avif">AVIF</option>
+              <option value="jpeg">JPEG</option>
+              <option value="png">PNG</option>
             </select>
           </label>
           <label>Quality
-            <input type=\"range\" id=\"quality\" min=\"1\" max=\"100\" value=\"82\" />
+            <input type="range" id="quality" min="1" max="100" value="82" />
+            <span id="qualityVal">82%</span>
           </label>
-          <label>Background
-            <select id=\"bg\">
-              <option value=\"transparent\">Keep transparency</option>
-              <option value=\"white\">White</option>
-              <option value=\"black\">Black</option>
-              <option value=\"custom\">Custom…</option>
+          <label>Background removal
+            <select id="bgMode">
+              <option value="people" selected>People (on-device)</option>
+              <option value="none">Disabled</option>
             </select>
           </label>
-          <label id=\"customColorWrap\" class=\"hidden\">Canvas color
-            <input type=\"color\" id=\"customColor\" value=\"#ffffff\" />
-          </label>
-          <label>Remove background (people)
-            <input type=\"checkbox\" id=\"rmBg\" />
-            <span class=\"muted\">On-device via MediaPipe</span>
+          <label>Canvas color (if not transparent)
+            <input type="color" id="canvasColor" value="#000000" />
           </label>
         </div>
 
-        <div class=\"row\" style="margin-top:12px">
-          <button class="btn" id="runBtn" disabled>Process images</button>
+        <div class="row" style="margin-top:12px">
+          <button class="btn" id="runBtn" disabled>Process Images</button>
           <button class="btn" id="zipBtn" disabled>Download ZIP</button>
-          <span class="muted" id="note">All work happens in your browser.</span>
+          <button class="btn" id="clearBtn">Clear Queue</button>
         </div>
+        <p class="muted">All work happens in your browser. Nothing is uploaded.</p>
 
         <div class="footer">
-          <span class="tag">Canvas encoders</span>
+          <span class="tag">MediaPipe</span>
+          <span class="tag">Squoosh Codecs</span>
           <span class="tag">JSZip</span>
-          <span class="tag">No modules / No wasm</span>
         </div>
       </div>
 
@@ -109,243 +111,116 @@
     </div>
   </div>
 
-  <!-- MediaPipe (non-module builds) -->
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
-  <!-- Only dependency: JSZip (UMD) for broad browser support -->
+  <!-- Dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script>
-    // ===== Elements =====
-    const $ = (id)=>document.getElementById(id);
-    const fileInput = $('file');
-    const drop = $('drop');
-    const runBtn = $('runBtn');
-    const zipBtn = $('zipBtn');
-    const thumbs = $('thumbs');
-    const prog = $('prog');
-    const countEl = $('count');
-    const maxWidth = $('maxWidth');
-    const maxHeight = $('maxHeight');
-    const formatSel = $('format');
-    const quality = $('quality');
-    const bg = $('bg');
-    const customColorWrap = $('customColorWrap');
-    const customColor = $('customColor');
-    const rmBg = $('rmBg');
-    const note = $('note');
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
+  <script type="module">
+    import { ImagePool } from "https://esm.run/@squoosh/lib";
 
-    let files = [];
-    let results = [];
-    let zip;
+    const $ = id => document.getElementById(id);
+    const fileInput = $("file"), drop = $("drop"), runBtn = $("runBtn"), zipBtn = $("zipBtn"),
+          clearBtn = $("clearBtn"), thumbs = $("thumbs"), prog = $("prog"), countEl = $("count"),
+          maxWidth = $("maxWidth"), maxHeight = $("maxHeight"), formatSel = $("format"),
+          quality = $("quality"), qualityVal = $("qualityVal"),
+          bgMode = $("bgMode"), canvasColor = $("canvasColor");
 
-    // MediaPipe SelfieSegmentation instance (if available)
+    let files = [], results = [], zip;
     let selfieSeg = null;
-    (async function initSeg(){
-      if (window.SelfieSegmentation){
-        selfieSeg = new SelfieSegmentation({ locateFile: (f)=> `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${f}` });
-        selfieSeg.setOptions({ modelSelection: 1 });
-        if (typeof selfieSeg.initialize === 'function') {
-          try { await selfieSeg.initialize(); } catch(e) { console.warn('Segmentation init', e); }
-        }
-      } else {
-        if (rmBg) { rmBg.disabled = true; }
-      }
-    })();
 
-    // ===== Helpers =====
-    const ACCEPTED_EXT = ["jpg","jpeg","png","webp","avif","heic","heif","gif","bmp"];
-    const isLikelyImage = (file) => {
-      if (/^image\//.test(file.type)) return true;
-      const ext = (file.name.split('.').pop() || '').toLowerCase();
-      return ACCEPTED_EXT.includes(ext);
-    };
+    // Quality label
+    quality.addEventListener("input", ()=> qualityVal.textContent = quality.value + "%");
 
-    function show(el){ el.classList.remove('hidden'); }
-    function hide(el){ el.classList.add('hidden'); }
-
-    async function supportsType(mime){
-      try{
-        const c = document.createElement('canvas');
-        c.width=c.height=2;
-        return await new Promise((res)=> c.toBlob(b=>res(!!b), mime, 0.8));
-      }catch{ return false; }
-    }
-
-    (async ()=>{
-      const avif = await supportsType('image/avif');
-      const webp = await supportsType('image/webp');
-      if(!avif){ [...formatSel.options].find(o=>o.value==='avif').text += ' (not supported)'; }
-      if(!webp){ [...formatSel.options].find(o=>o.value==='webp').text += ' (not supported)'; }
-      if(!webp && !avif){ note.textContent = 'Tip: Chrome/Edge support WebP/AVIF for smaller files.'; }
-    })();
-
-    // ===== Drag & Drop + Browse =====
-    function accept(items){
-      const picked = Array.from(items).filter(isLikelyImage);
-      if (!picked.length){ alert('No images detected. Pick PNG/JPG/WebP/AVIF files.'); return; }
-      files = [...files, ...picked];
-      countEl.textContent = files.length + ' items';
+    // Drag/drop
+    const accept = items => {
+      files = [...files, ...Array.from(items).filter(f => /^image\\//.test(f.type))];
+      countEl.textContent = files.length + " items";
       runBtn.disabled = files.length === 0;
       renderQueue();
-    }
+    };
+    fileInput.addEventListener("change", e=> accept(e.target.files));
+    ["dragenter","dragover"].forEach(ev=> drop.addEventListener(ev,e=>{e.preventDefault(); drop.style.borderColor="#2b6ef3"}));
+    ["dragleave","drop"].forEach(ev=> drop.addEventListener(ev,e=>{e.preventDefault(); drop.style.borderColor="#33415c"}));
+    drop.addEventListener("drop", e=> accept(e.dataTransfer.files));
+    drop.addEventListener("click", ()=> fileInput.click());
 
-    fileInput.addEventListener('change', (e)=>accept(e.target.files));
-
-    // Prevent default to enable drop
-    ;['dragenter','dragover','dragleave','drop'].forEach(ev=>{
-      drop.addEventListener(ev, e=>{ e.preventDefault(); e.stopPropagation(); });
-    });
-    drop.addEventListener('dragenter', ()=> drop.style.borderColor='#2b6ef3');
-    drop.addEventListener('dragleave', ()=> drop.style.borderColor='#33415c');
-    drop.addEventListener('drop', (e)=>{ drop.style.borderColor='#33415c'; accept(e.dataTransfer.files); });
-    // Clicking the drop zone opens file picker (for mobile/iOS where DnD isn't supported)
-    drop.addEventListener('click', ()=> fileInput.click());
+    clearBtn.onclick = ()=>{ files=[]; thumbs.innerHTML=\"\"; countEl.textContent=\"0 items\"; runBtn.disabled=true; zipBtn.disabled=true; prog.style.width=\"0%\"; };
 
     function renderQueue(){
       thumbs.innerHTML = files.map((f,i)=>`
-        <div class="thumb" data-i="${i}">
-          <div><img id="img-${i}" alt="preview" /></div>
-          <div class="muted">${f.name}</div>
-          <div class="muted" id="status-${i}">Queued</div>
-        </div>
+        <div class='thumb'><img id='img-${i}'/><div class='muted'>${f.name}</div><div class='muted' id='status-${i}'>Queued</div></div>
       `).join('');
       files.forEach((f,i)=>{
         const reader = new FileReader();
-        reader.onload = ()=>{ const img = $('img-'+i); if(img) img.src = reader.result; };
+        reader.onload = ()=>{ const img=$('img-'+i); if(img) img.src=reader.result; };
         reader.readAsDataURL(f);
       });
     }
 
-    bg.addEventListener('change', ()=>{
-      if (bg.value === 'custom') show(customColorWrap); else hide(customColorWrap);
-    });
+    // Background removal
+    selfieSeg = new SelfieSegmentation({ locateFile: f => "https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/"+f });
+    selfieSeg.setOptions({ modelSelection:1 });
+    await selfieSeg.initialize();
 
-    // ===== Image Pipeline (no modules) =====
-    function fitSize(w,h,maxW,maxH){
-      const r = Math.min(maxW / w, maxH / h, 1);
-      return { w: Math.max(1, Math.round(w*r)), h: Math.max(1, Math.round(h*r)) };
-    }
-
-    function loadHTMLImageFromFile(file){
-      return new Promise((resolve,reject)=>{
-        const url = URL.createObjectURL(file);
-        const img = new Image();
-        img.onload = ()=>{ URL.revokeObjectURL(url); resolve(img); };
-        img.onerror = (e)=>{ URL.revokeObjectURL(url); reject(e); };
-        img.src = url;
+    async function removeBg(imageBitmap){
+      return new Promise(resolve=>{
+        const w=imageBitmap.width,h=imageBitmap.height;
+        const src=document.createElement("canvas"); src.width=w;src.height=h;
+        const ctx=src.getContext("2d"); ctx.drawImage(imageBitmap,0,0);
+        selfieSeg.onResults(res=>{
+          const c=document.createElement("canvas"); c.width=w;c.height=h;
+          const cc=c.getContext("2d"); cc.drawImage(res.segmentationMask,0,0,w,h);
+          const mask=cc.getImageData(0,0,w,h);
+          const imgData=ctx.getImageData(0,0,w,h); const p=imgData.data,m=mask.data,t=128;
+          for(let i=0;i<p.length;i+=4){ p[i+3]=(m[i]>t)?255:0; }
+          ctx.putImageData(imgData,0,0); resolve(src);
+        });
+        selfieSeg.send({ image:imageBitmap });
       });
     }
 
-    function canvasEncode(canvas, type, q){
-      const mime = (type==='jpeg')?'image/jpeg':(type==='png')?'image/png':(type==='avif')?'image/avif':'image/webp';
-      return new Promise((resolve)=> canvas.toBlob(b=>resolve(b), mime, q));
+    const pool = new ImagePool(navigator.hardwareConcurrency || 4);
+
+    async function encodeWithSquoosh(canvas,targetFmt,q,maxW,maxH){
+      const bmp=await createImageBitmap(canvas);
+      let {width:w,height:h}=bmp; const r=Math.min(maxW/w,maxH/h,1);
+      w=Math.round(w*r);h=Math.round(h*r);
+      const work=document.createElement("canvas"); work.width=w;work.height=h;
+      const c=work.getContext("2d"); c.imageSmoothingQuality="high"; c.drawImage(bmp,0,0,w,h);
+      const image=pool.ingestImage(await work.convertToBlob({type:'image/png'}));
+      const enc={ jpeg:{encoderName:'mozjpeg',encodeOptions:{quality:q}},
+                  webp:{encoderName:'webp',encodeOptions:{quality:q}},
+                  avif:{encoderName:'avif',encodeOptions:{cqLevel:Math.round(63-(q/100)*63)}},
+                  png:{encoderName:'oxipng',encodeOptions:{level:3}} };
+      await image.encode(enc[targetFmt]); const encoded=image.encodedWith[enc[targetFmt].encoderName];
+      return new Blob([encoded.binary],{type:`image/${targetFmt==='jpeg'?'jpeg':targetFmt}`});
     }
 
-    function applyPeopleMatteToCanvas(baseCanvas){
-      return new Promise((resolve, reject)=>{
-        if (!selfieSeg) return resolve(baseCanvas);
-        const w = baseCanvas.width, h = baseCanvas.height;
-        const tmpImg = new Image();
-        tmpImg.onload = ()=>{
-          const maskCanvas = document.createElement('canvas');
-          maskCanvas.width = w; maskCanvas.height = h;
-          const mc = maskCanvas.getContext('2d');
-          selfieSeg.onResults((res)=>{
-            try{
-              mc.drawImage(res.segmentationMask, 0, 0, w, h);
-              const mask = mc.getImageData(0,0,w,h);
-              const ctx = baseCanvas.getContext('2d');
-              const imgData = ctx.getImageData(0,0,w,h);
-              const p = imgData.data, m = mask.data;
-              const t = 128;
-              for (let i=0;i<p.length;i+=4){ p[i+3] = (m[i] > t) ? 255 : 0; }
-              ctx.putImageData(imgData,0,0);
-              resolve(baseCanvas);
-            }catch(e){ console.error(e); resolve(baseCanvas); }
-          });
-          selfieSeg.send({ image: tmpImg });
-        };
-        tmpImg.onerror = ()=> resolve(baseCanvas);
-        tmpImg.src = baseCanvas.toDataURL('image/png');
-      });
-    }
-
-    runBtn.addEventListener('click', async ()=>{
+    runBtn.addEventListener("click", async ()=>{
       if(!files.length) return;
-      runBtn.disabled = true; zipBtn.disabled = true; results = []; zip = new JSZip();
-      prog.style.width = '0%';
-
-      const maxW = +maxWidth.value, maxH = +maxHeight.value;
-      let outFmt = formatSel.value;
-      const q = +quality.value / 100;
-
-      // Fallback if chosen format isn't supported
-      const mimeWanted = (outFmt==='jpeg')?'image/jpeg':(outFmt==='png')?'image/png':(outFmt==='avif')?'image/avif':'image/webp';
-      const supported = await (async()=>{
-        const c = document.createElement('canvas'); c.width=c.height=2;
-        return await new Promise(res=> c.toBlob(b=>res(!!b), mimeWanted, q));
-      })();
-      if (!supported) outFmt = 'png';
-
-      let done = 0;
-      for (const [i,f] of files.entries()){
-        const status = $('status-'+i);
+      runBtn.disabled=true; zipBtn.disabled=true; results=[]; zip=new JSZip(); prog.style.width='0%';
+      const maxW=+maxWidth.value,maxH=+maxHeight.value,outFmt=formatSel.value,q=+quality.value; 
+      const doBg=bgMode.value!=='none'; let done=0;
+      for(const [i,f] of files.entries()){
+        const st=$('status-'+i);
         try{
-          status.textContent = 'Reading…';
-          const img = await loadHTMLImageFromFile(f);
-
-          const { w, h } = fitSize(img.naturalWidth || img.width, img.naturalHeight || img.height, maxW, maxH);
-          // work at full resolution for better mattes, then resize
-          const work = document.createElement('canvas');
-          work.width = img.naturalWidth || img.width; work.height = img.naturalHeight || img.height;
-          const wc = work.getContext('2d');
-          wc.imageSmoothingQuality = 'high';
-          wc.drawImage(img, 0, 0);
-
-          if (rmBg && rmBg.checked){
-            status.textContent = 'Removing background…';
-            await applyPeopleMatteToCanvas(work);
-          }
-
-          const canvas = document.createElement('canvas');
-          canvas.width = w; canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.imageSmoothingQuality = 'high';
-
-          const needsOpaque = (outFmt==='jpeg' || bg.value!=='transparent');
-          if (needsOpaque){
-            let color = '#00000000';
-            if (bg.value==='white') color = '#ffffff';
-            else if (bg.value==='black') color = '#000000';
-            else if (bg.value==='custom') color = customColor.value;
-            ctx.fillStyle = color; ctx.fillRect(0,0,w,h);
-          }
-
-          ctx.drawImage(work, 0, 0, w, h);
-
-          status.textContent = 'Encoding…';
-          const blob = await canvasEncode(canvas, outFmt, q);
-          const ext = (blob && blob.type.includes('jpeg'))?'jpg':(blob && blob.type.split('/')[1]) || outFmt;
-          const name = f.name.replace(/\.[^.]+$/, '') + '.' + ext;
-          zip.file(name, blob);
-
-          status.textContent = 'Done';
-        }catch(err){ console.error(err); status.textContent = 'Failed'; }
-        finally{ done++; prog.style.width = ((done/files.length)*100).toFixed(1)+'%'; }
+          st.textContent='Reading…'; const bmp=await createImageBitmap(f);
+          let canvas=document.createElement('canvas'); canvas.width=bmp.width;canvas.height=bmp.height;
+          const ctx=canvas.getContext('2d'); ctx.drawImage(bmp,0,0);
+          if(doBg){ st.textContent='Removing background…'; canvas=await removeBg(bmp); }
+          st.textContent='Optimizing…';
+          const blob=await encodeWithSquoosh(canvas,outFmt,q,maxW,maxH);
+          zip.file(f.name,blob);
+          st.textContent='Done';
+        }catch(e){console.error(e);st.textContent='Failed';}
+        finally{done++;prog.style.width=((done/files.length)*100).toFixed(1)+'%';}
       }
-
-      zipBtn.disabled = false;
-      runBtn.disabled = false;
+      zipBtn.disabled=false; runBtn.disabled=false; await pool.close();
     });
 
-    zipBtn.addEventListener('click', async ()=>{
-      if (!zip) return;
-      const blob = await zip.generateAsync({ type:'blob' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'processed-images.zip';
-      a.click();
-      URL.revokeObjectURL(url);
+    zipBtn.addEventListener("click", async ()=>{
+      if(!zip) return; const blob=await zip.generateAsync({type:'blob'});
+      const url=URL.createObjectURL(blob); const a=document.createElement('a');
+      a.href=url;a.download='optimized-images.zip';a.click();URL.revokeObjectURL(url);
     });
   </script>
 </body>
