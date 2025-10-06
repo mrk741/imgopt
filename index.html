@@ -157,8 +157,20 @@
     })();
 
     // --- Drag & drop ---
+    const ACCEPTED_EXT = ["jpg","jpeg","png","webp","avif","heic","heif","gif","bmp"];
+    const isLikelyImage = (file) => {
+      if (/^image\//.test(file.type)) return true; // normal case
+      // Some environments (e.g., WhatsApp exports) set type to octet-stream or empty.
+      const ext = (file.name.split('.').pop() || '').toLowerCase();
+      return ACCEPTED_EXT.includes(ext);
+    };
     const accept = (items) => {
-      files = [...files, ...Array.from(items).filter(f => /^image\//.test(f.type))];
+      const picked = Array.from(items).filter(isLikelyImage);
+      if (!picked.length) {
+        alert('No images detected in selection. Try picking PNG/JPG/WebP/AVIF files.');
+        return;
+      }
+      files = [...files, ...picked];
       countEl.textContent = files.length + ' items';
       runBtn.disabled = files.length === 0;
       renderQueue();
