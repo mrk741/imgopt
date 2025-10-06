@@ -1,109 +1,83 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Background Remover • Bulk Image Optimizer</title>
-  <link rel="icon" href="data:;base64,=" />
-  <style>
-    :root { --bg:#0b0d12; --card:#131722; --ink:#e8ecf1; --muted:#9aa4b2; }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter;background:var(--bg);color:var(--ink)}
-    a{color:#4b82ff;text-decoration:none}
-    header{padding:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#0f1320;border-bottom:1px solid #1e2332}
-    header h1{margin:0;font-size:20px;font-weight:700}
-    nav a{margin-left:16px;font-size:14px;color:var(--muted)}
-    .wrap{max-width:1100px;margin:0 auto;padding:0 18px 60px}
-    .card{background:var(--card);border:1px solid #20283a;border-radius:18px;padding:18px;margin-top:18px}
-    .grid{display:grid;gap:18px;grid-template-columns:1fr}
-    @media(min-width:980px){.grid{grid-template-columns:420px 1fr}}
-    .drop{border:1.5px dashed #33415c;border-radius:14px;padding:18px;text-align:center;color:var(--muted);cursor:pointer}
-    .btn{background:#2b6ef3;color:#fff;border:0;padding:10px 14px;border-radius:12px;font-weight:600;cursor:pointer}
-    .btn:disabled{opacity:.6;cursor:not-allowed}
-    .controls{display:grid;gap:12px;grid-template-columns:repeat(2,1fr)}
-    .controls label{display:grid;gap:6px;font-size:12px;color:var(--muted)}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .thumbs{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
-    .thumb{background:#0f1320;border:1px solid #20283a;border-radius:12px;padding:10px;display:grid;gap:8px}
-    .thumb img{width:100%;height:120px;object-fit:contain;background:#0b0f1a;border-radius:8px}
-    .bar{height:6px;background:#111727;border-radius:999px;overflow:hidden}
-    .bar>i{display:block;height:100%;width:0%;background:#2b6ef3;transition:width .25s ease}
-    .muted{color:var(--muted);font-size:12px}
-    select,input[type=number],input[type=range]{background:#0f1320;border:1px solid #20283a;color:var(--ink);border-radius:10px;padding:8px 10px}
-    #qualityVal{font-weight:600;margin-left:6px;color:#4b82ff}
-    .footer{margin-top:12px;color:#7c8798;font-size:12px;text-align:center}
-    .tag{font-size:11px;background:#0d1220;border:1px solid #1d2740;color:#a6b0c0;padding:2px 6px;border-radius:999px}
-    .hidden{display:none}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Background Remover • Bulk Resizer (Client-Only)</title>
+<meta name="description" content="Remove image backgrounds, resize, and optimize in bulk — 100% in your browser. No uploads." />
+<style>
+  :root{--bg:#0b0d12;--card:#131722;--ink:#e8ecf1;--muted:#9aa4b2;--accent:#2b6ef3}
+  *{box-sizing:border-box} body{margin:0;font-family:system-ui,Segoe UI,Roboto,Inter;background:var(--bg);color:var(--ink)}
+  header{padding:28px 20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .pill{background:#1d2433;border:1px solid #2a3347;padding:6px 10px;border-radius:999px;color:var(--muted);font-size:12px}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 18px 60px}
+  .card{background:var(--card);border:1px solid #20283a;border-radius:18px;padding:18px}
+  .grid{display:grid;gap:18px;grid-template-columns:1fr} @media(min-width:980px){.grid{grid-template-columns:420px 1fr}}
+  .drop{border:1.5px dashed #33415c;border-radius:14px;padding:18px;text-align:center;color:var(--muted)}
+  .btn{background:var(--accent);color:#fff;border:0;padding:10px 14px;border-radius:12px;font-weight:600;cursor:pointer}
+  .controls{display:grid;gap:12px;grid-template-columns:repeat(2,1fr)}
+  .controls label{display:grid;gap:6px;font-size:12px;color:var(--muted)}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .thumbs{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .thumb{background:#0f1320;border:1px solid #20283a;border-radius:12px;padding:10px;display:grid;gap:8px}
+  .thumb img{width:100%;height:120px;object-fit:contain;background:#0b0f1a;border-radius:8px}
+  .bar{height:6px;background:#111727;border-radius:999px;overflow:hidden}.bar>i{display:block;height:100%;width:0%;background:var(--accent);transition:width .25s}
+  .muted{color:var(--muted);font-size:12px}
+  .alert{max-width:1100px;margin:14px auto 0;padding:12px 16px;border:1px solid #6b1d1d;background:#1f0e10;color:#ffb4b4;border-radius:12px;display:none}
+  select,input[type=number],input[type=range],input[type=color]{background:#0f1320;border:1px solid #20283a;color:var(--ink);border-radius:10px;padding:8px 10px}
+</style>
 </head>
 <body>
   <header>
-    <h1>Background Remover + Bulk Optimizer</h1>
-    <nav>
-      <a href="about.html">About</a>
-      <a href="help.html">Help</a>
-    </nav>
+    <h1 style="margin:0;font-size:20px">Background Remover + Bulk Resizer/Optimizer</h1>
+    <span class="pill">Client-only • Works on Cloudflare Pages</span>
   </header>
 
   <div class="wrap">
     <div class="grid">
       <div class="card">
         <div class="drop" id="drop">
-          <p><strong>Drop images here</strong> or click to browse</p>
-          <input id="file" type="file" accept="image/*" multiple class="hidden" />
-          <p class="muted">PNG, JPG, WebP, AVIF • all processed locally</p>
+          <p><strong>Drop images here</strong> or
+            <label class="btn"><input id="file" type="file" accept="image/*" multiple style="display:none" />Browse</label>
+          </p>
+          <p class="muted">PNG, JPG, WebP • processed entirely in your browser</p>
         </div>
 
         <hr style="border:0;border-top:1px solid #20283a;margin:18px 0" />
 
         <div class="controls">
-          <label>Max width (px)
-            <input type="number" id="maxWidth" min="64" step="16" value="1600" />
-          </label>
-          <label>Max height (px)
-            <input type="number" id="maxHeight" min="64" step="16" value="1600" />
-          </label>
+          <label>Max width (px)<input type="number" id="maxWidth" min="64" step="16" value="1600" /></label>
+          <label>Max height (px)<input type="number" id="maxHeight" min="64" step="16" value="1600" /></label>
           <label>Output format
             <select id="format">
               <option value="webp">WebP</option>
-              <option value="avif">AVIF</option>
               <option value="jpeg">JPEG</option>
               <option value="png">PNG</option>
+              <option value="avif">AVIF (if supported)</option>
             </select>
           </label>
-          <label>Quality
-            <input type="range" id="quality" min="1" max="100" value="82" />
-            <span id="qualityVal">82%</span>
-          </label>
+          <label>Quality<input type="range" id="quality" min="1" max="100" value="82" /></label>
           <label>Background removal
             <select id="bgMode">
-              <option value="people" selected>People (on-device)</option>
+              <option value="u2net">Universal (U²-Net, on-device)</option>
               <option value="none">Disabled</option>
             </select>
           </label>
-          <label>Canvas color (if not transparent)
-            <input type="color" id="canvasColor" value="#000000" />
-          </label>
+          <label>Canvas color (fallback)<input type="color" id="canvasColor" value="#000000" /></label>
         </div>
 
         <div class="row" style="margin-top:12px">
-          <button class="btn" id="runBtn" disabled>Process Images</button>
+          <button class="btn" id="runBtn" disabled>Process images</button>
           <button class="btn" id="zipBtn" disabled>Download ZIP</button>
-          <button class="btn" id="clearBtn">Clear Queue</button>
+          <span class="muted">No uploads. Works on Cloudflare Pages.</span>
         </div>
-        <p class="muted">All work happens in your browser. Nothing is uploaded.</p>
 
-        <div class="footer">
-          <span class="tag">MediaPipe</span>
-          <span class="tag">Squoosh Codecs</span>
-          <span class="tag">JSZip</span>
-        </div>
+        <div class="row" style="margin-top:10px"><span class="muted">Deps: ONNX Runtime Web, JSZip</span></div>
       </div>
 
       <div class="card">
         <div class="row" style="justify-content:space-between;">
-          <strong>Queue</strong>
-          <span class="muted" id="count">0 items</span>
+          <strong>Queue</strong><span class="muted" id="count">0 items</span>
         </div>
         <div class="bar" style="margin:10px 0 14px"><i id="prog"></i></div>
         <div class="thumbs" id="thumbs"></div>
@@ -111,118 +85,174 @@
     </div>
   </div>
 
-  <!-- Dependencies -->
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
+  <div id="alert" class="alert"></div>
+
+  <!-- ONNX Runtime Web -->
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
   <script type="module">
-    import { ImagePool } from "https://esm.run/@squoosh/lib";
+    // ===== Helpers & UI =====
+    const el = id => document.getElementById(id);
+    const Alert = { show(m){ const b=el('alert'); b.textContent=m; b.style.display='block'; }, hide(){ el('alert').style.display='none'; } };
+    const hasOffscreen = typeof OffscreenCanvas !== 'undefined';
+    const makeCanvas = (w,h) => hasOffscreen ? new OffscreenCanvas(w,h) : Object.assign(document.createElement('canvas'),{width:w,height:h});
+    const canvasToBlob = (can, type='image/png', q=0.82) => new Promise(res=> { if (hasOffscreen && can.convertToBlob) can.convertToBlob({type,quality:q}).then(res); else can.toBlob(res,type,q); });
+    const toBitmap = async blob => { try { return await createImageBitmap(blob); } catch { return await new Promise((res,rej)=>{ const img=new Image(); img.onload=()=>res(createImageBitmap(img)); img.onerror=rej; img.src=URL.createObjectURL(blob); }); } };
 
-    const $ = id => document.getElementById(id);
-    const fileInput = $("file"), drop = $("drop"), runBtn = $("runBtn"), zipBtn = $("zipBtn"),
-          clearBtn = $("clearBtn"), thumbs = $("thumbs"), prog = $("prog"), countEl = $("count"),
-          maxWidth = $("maxWidth"), maxHeight = $("maxHeight"), formatSel = $("format"),
-          quality = $("quality"), qualityVal = $("qualityVal"),
-          bgMode = $("bgMode"), canvasColor = $("canvasColor");
+    const fileInput = el('file'), drop = el('drop'), runBtn = el('runBtn'), zipBtn = el('zipBtn'),
+          thumbs = el('thumbs'), prog = el('prog'), countEl = el('count'),
+          maxWidth = el('maxWidth'), maxHeight = el('maxHeight'),
+          formatSel = el('format'), quality = el('quality'), bgMode = el('bgMode');
+    let files = [], results=[], zip;
 
-    let files = [], results = [], zip;
-    let selfieSeg = null;
-
-    // Quality label
-    quality.addEventListener("input", ()=> qualityVal.textContent = quality.value + "%");
-
-    // Drag/drop
+    // Drag & Drop + Browse
     const accept = items => {
-      files = [...files, ...Array.from(items).filter(f => /^image\\//.test(f.type))];
-      countEl.textContent = files.length + " items";
+      files = [...files, ...Array.from(items).filter(f=>/^image\\//.test(f.type))];
+      countEl.textContent = files.length + ' items';
       runBtn.disabled = files.length === 0;
       renderQueue();
     };
-    fileInput.addEventListener("change", e=> accept(e.target.files));
-    ["dragenter","dragover"].forEach(ev=> drop.addEventListener(ev,e=>{e.preventDefault(); drop.style.borderColor="#2b6ef3"}));
-    ["dragleave","drop"].forEach(ev=> drop.addEventListener(ev,e=>{e.preventDefault(); drop.style.borderColor="#33415c"}));
-    drop.addEventListener("drop", e=> accept(e.dataTransfer.files));
-    drop.addEventListener("click", ()=> fileInput.click());
-
-    clearBtn.onclick = ()=>{ files=[]; thumbs.innerHTML=\"\"; countEl.textContent=\"0 items\"; runBtn.disabled=true; zipBtn.disabled=true; prog.style.width=\"0%\"; };
+    fileInput.addEventListener('change', e => accept(e.target.files));
+    drop.addEventListener('click', () => fileInput.click());
+    ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault(); drop.style.borderColor='#2b6ef3'}));
+    ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault(); drop.style.borderColor='#33415c'}));
+    drop.addEventListener('drop', e => accept(e.dataTransfer.files));
 
     function renderQueue(){
       thumbs.innerHTML = files.map((f,i)=>`
-        <div class='thumb'><img id='img-${i}'/><div class='muted'>${f.name}</div><div class='muted' id='status-${i}'>Queued</div></div>
-      `).join('');
-      files.forEach((f,i)=>{
-        const reader = new FileReader();
-        reader.onload = ()=>{ const img=$('img-'+i); if(img) img.src=reader.result; };
-        reader.readAsDataURL(f);
-      });
+        <div class="thumb" data-i="${i}">
+          <div><img id="img-${i}" alt="preview"/></div>
+          <div class="muted">${f.name}</div>
+          <div class="muted" id="status-${i}">Queued</div>
+        </div>`).join('');
+      files.forEach((f,i)=>{ const r=new FileReader(); r.onload=()=>{ const img=el('img-'+i); if(img) img.src=r.result; }; r.readAsDataURL(f); });
     }
 
-    // Background removal
-    selfieSeg = new SelfieSegmentation({ locateFile: f => "https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/"+f });
-    selfieSeg.setOptions({ modelSelection:1 });
-    await selfieSeg.initialize();
-
-    async function removeBg(imageBitmap){
-      return new Promise(resolve=>{
-        const w=imageBitmap.width,h=imageBitmap.height;
-        const src=document.createElement("canvas"); src.width=w;src.height=h;
-        const ctx=src.getContext("2d"); ctx.drawImage(imageBitmap,0,0);
-        selfieSeg.onResults(res=>{
-          const c=document.createElement("canvas"); c.width=w;c.height=h;
-          const cc=c.getContext("2d"); cc.drawImage(res.segmentationMask,0,0,w,h);
-          const mask=cc.getImageData(0,0,w,h);
-          const imgData=ctx.getImageData(0,0,w,h); const p=imgData.data,m=mask.data,t=128;
-          for(let i=0;i<p.length;i+=4){ p[i+3]=(m[i]>t)?255:0; }
-          ctx.putImageData(imgData,0,0); resolve(src);
-        });
-        selfieSeg.send({ image:imageBitmap });
-      });
-    }
-
-    const pool = new ImagePool(navigator.hardwareConcurrency || 4);
-
-    async function encodeWithSquoosh(canvas,targetFmt,q,maxW,maxH){
-      const bmp=await createImageBitmap(canvas);
-      let {width:w,height:h}=bmp; const r=Math.min(maxW/w,maxH/h,1);
-      w=Math.round(w*r);h=Math.round(h*r);
-      const work=document.createElement("canvas"); work.width=w;work.height=h;
-      const c=work.getContext("2d"); c.imageSmoothingQuality="high"; c.drawImage(bmp,0,0,w,h);
-      const image=pool.ingestImage(await work.convertToBlob({type:'image/png'}));
-      const enc={ jpeg:{encoderName:'mozjpeg',encodeOptions:{quality:q}},
-                  webp:{encoderName:'webp',encodeOptions:{quality:q}},
-                  avif:{encoderName:'avif',encodeOptions:{cqLevel:Math.round(63-(q/100)*63)}},
-                  png:{encoderName:'oxipng',encodeOptions:{level:3}} };
-      await image.encode(enc[targetFmt]); const encoded=image.encodedWith[enc[targetFmt].encoderName];
-      return new Blob([encoded.binary],{type:`image/${targetFmt==='jpeg'?'jpeg':targetFmt}`});
-    }
-
-    runBtn.addEventListener("click", async ()=>{
-      if(!files.length) return;
-      runBtn.disabled=true; zipBtn.disabled=true; results=[]; zip=new JSZip(); prog.style.width='0%';
-      const maxW=+maxWidth.value,maxH=+maxHeight.value,outFmt=formatSel.value,q=+quality.value; 
-      const doBg=bgMode.value!=='none'; let done=0;
-      for(const [i,f] of files.entries()){
-        const st=$('status-'+i);
-        try{
-          st.textContent='Reading…'; const bmp=await createImageBitmap(f);
-          let canvas=document.createElement('canvas'); canvas.width=bmp.width;canvas.height=bmp.height;
-          const ctx=canvas.getContext('2d'); ctx.drawImage(bmp,0,0);
-          if(doBg){ st.textContent='Removing background…'; canvas=await removeBg(bmp); }
-          st.textContent='Optimizing…';
-          const blob=await encodeWithSquoosh(canvas,outFmt,q,maxW,maxH);
-          zip.file(f.name,blob);
-          st.textContent='Done';
-        }catch(e){console.error(e);st.textContent='Failed';}
-        finally{done++;prog.style.width=((done/files.length)*100).toFixed(1)+'%';}
+    // ===== U²-Net via ONNX Runtime Web (client-side) =====
+    const U2_URL = '/models/u2netp.onnx'; // place model here in your repo
+    let u2Session=null;
+    async function initU2(){
+      if (u2Session) return;
+      // prefer WebGPU/WebGL; fallback WASM
+      const EPs = ['webgpu','webgl','wasm'];
+      for (const ep of EPs) {
+        try { u2Session = await ort.InferenceSession.create(U2_URL, { executionProviders:[ep] }); return; }
+        catch(e){ /* try next */ }
       }
-      zipBtn.disabled=false; runBtn.disabled=false; await pool.close();
-    });
+      throw new Error('Failed to initialize U²-Net. Is /models/u2netp.onnx present?');
+    }
 
-    zipBtn.addEventListener("click", async ()=>{
-      if(!zip) return; const blob=await zip.generateAsync({type:'blob'});
-      const url=URL.createObjectURL(blob); const a=document.createElement('a');
-      a.href=url;a.download='optimized-images.zip';a.click();URL.revokeObjectURL(url);
+    function prepTensor(imgBitmap, size=320){
+      const can = makeCanvas(size,size), ctx = can.getContext('2d');
+      const s = Math.min(size/imgBitmap.width, size/imgBitmap.height);
+      const nw = Math.round(imgBitmap.width*s), nh = Math.round(imgBitmap.height*s);
+      const ox = (size-nw)>>1, oy = (size-nh)>>1;
+      ctx.fillStyle='#000'; ctx.fillRect(0,0,size,size);
+      ctx.drawImage(imgBitmap, ox, oy, nw, nh);
+      const { data } = ctx.getImageData(0,0,size,size);
+      const N=size*size, chw=new Float32Array(3*N);
+      for (let i=0;i<N;i++){ const j=i*4; chw[i]=data[j]/255; chw[i+N]=data[j+1]/255; chw[i+2*N]=data[j+2]/255; }
+      return { tensor:new ort.Tensor('float32', chw, [1,3,size,size]), size, ox, oy, nw, nh };
+    }
+
+    async function removeBgU2(blob){
+      await initU2();
+      const bmp = await toBitmap(blob);
+      const { tensor,size,ox,oy,nw,nh } = prepTensor(bmp, 320);
+      const out = await u2Session.run({ [u2Session.inputNames[0]]: tensor });
+      const first = out[Object.keys(out)[0]];
+      const arr = first.data;
+      let mn=Infinity,mx=-Infinity; for (const v of arr){ if(v<mn) mn=v; if(v>mx) mx=v; }
+      const scale = 255/(mx-mn+1e-6);
+      const mask = new Uint8ClampedArray(arr.length*4);
+      for (let i=0;i<arr.length;i++){ const a=Math.max(0,Math.min(255,Math.round((arr[i]-mn)*scale))); const j=i*4; mask[j]=a; mask[j+1]=a; mask[j+2]=a; mask[j+3]=255; }
+      const mCan = makeCanvas(size,size), mCtx = mCan.getContext('2d');
+      mCtx.putImageData(new ImageData(mask, size, size), 0, 0);
+
+      // Compose alpha onto original size
+      const outCan = makeCanvas(bmp.width,bmp.height), o = outCan.getContext('2d');
+      o.drawImage(bmp,0,0);
+      const imgData = o.getImageData(0,0,bmp.width,bmp.height);
+      const aCan = makeCanvas(size,size), aCtx=aCan.getContext('2d'); aCtx.drawImage(mCan,0,0,size,size);
+      const alpha = aCtx.getImageData(0,0,size,size).data;
+      const p = imgData.data;
+      for (let y=0;y<size;y++){
+        for (let x=0;x<size;x++){
+          const ax = x, ay = y, A = alpha[(ay*size+ax)*4];
+          // Map only the letterboxed region back to original
+          const ix = Math.floor((x-ox) * (bmp.width/nw));
+          const iy = Math.floor((y-oy) * (bmp.height/nh));
+          if (ix>=0 && iy>=0 && ix<bmp.width && iy<bmp.height){
+            p[(iy*bmp.width+ix)*4+3] = A>128 ? 255 : 0;
+          }
+        }
+      }
+      o.putImageData(imgData,0,0);
+      return canvasToBlob(outCan, 'image/png'); // PNG with alpha
+    }
+
+    // ===== Encode (resize + format) using built-in encoders =====
+    async function encode(blobIn, fmt, q, maxW, maxH){
+      const bmp = await toBitmap(blobIn);
+      let {width:w,height:h} = bmp; const r = Math.min(maxW/w, maxH/h, 1); w=Math.round(w*r); h=Math.round(h*r);
+      const can = makeCanvas(w,h), c=can.getContext('2d'); c.imageSmoothingQuality='high'; c.drawImage(bmp,0,0,w,h);
+      const desired = fmt.toLowerCase();
+      const tryTypes = [];
+      if (desired==='avif') tryTypes.push('image/avif');
+      if (desired==='webp') tryTypes.push('image/webp');
+      if (desired==='jpeg') tryTypes.push('image/jpeg');
+      if (desired==='png')  tryTypes.push('image/png');
+      if (!tryTypes.includes('image/webp')) tryTypes.push('image/webp');
+      if (!tryTypes.includes('image/jpeg')) tryTypes.push('image/jpeg');
+      if (!tryTypes.includes('image/png'))  tryTypes.push('image/png');
+      const qf = Math.min(1, Math.max(0.01, q/100));
+      for (const type of tryTypes){
+        const b = await canvasToBlob(can, type, qf);
+        if (b && b.type) return b;
+      }
+      return canvasToBlob(can, 'image/png');
+    }
+
+    // ===== ZIP (JSZip via ESM shim) =====
+    import JSZip from 'https://esm.run/jszip';
+
+    // ===== Pipeline =====
+    runBtn.addEventListener('click', async ()=>{
+      if (!files.length) return;
+      runBtn.disabled=true; zipBtn.disabled=true; results=[]; const zip = new JSZip(); prog.style.width='0%';
+
+      const maxW=+maxWidth.value, maxH=+maxHeight.value, outFmt=formatSel.value, q=+quality.value, mode=bgMode.value;
+      let done=0;
+      for (const [i,f] of files.entries()){
+        const status = document.getElementById('status-'+i);
+        try {
+          status.textContent='Reading…';
+          let blob = f;
+
+          if (mode==='u2net'){
+            status.textContent='Removing background…';
+            blob = await removeBgU2(f);
+          }
+
+          status.textContent='Optimizing…';
+          const outBlob = await encode(blob, outFmt, q, maxW, maxH);
+          const name = f.name.replace(/\.[^.]+$/, '') + '.' + (outFmt==='jpeg'?'jpg':outFmt);
+          zip.file(name, outBlob);
+          results.push({name, blob: outBlob});
+          status.textContent='Done';
+        } catch(e){
+          console.error(e);
+          status.textContent='Failed';
+          Alert.show(e.message || 'Processing error. Check console.');
+        } finally {
+          done++; prog.style.width = ((done/files.length)*100).toFixed(1)+'%';
+        }
+      }
+      zipBtn.onclick = async ()=>{
+        const blob = await zip.generateAsync({type:'blob'});
+        const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='processed-images.zip'; a.click(); URL.revokeObjectURL(url);
+      };
+      zipBtn.disabled = results.length===0; runBtn.disabled=false;
     });
   </script>
 </body>
-<p>Mrk</p>
 </html>
