@@ -31,7 +31,7 @@
     .bar{height:6px;background:#111727;border-radius:999px;overflow:hidden}
     .bar>i{display:block;height:100%;width:0%;background:#2b6ef3;transition:width .25s ease}
     .muted{color:var(--muted);font-size:12px}
-    select,input[type=number],input[type=range]{background:#0f1320;border:1px solid #20283a;color:var(--ink);border-radius:10px;padding:8px 10px}
+    select,input[type=number],input[type=range],input[type=color]{background:#0f1320;border:1px solid #20283a;color:var(--ink);border-radius:10px;padding:8px 10px}
     #qualityVal{font-weight:600;margin-left:6px;color:#4b82ff}
     .footer{margin-top:12px;color:#7c8798;font-size:12px;text-align:center}
     .tag{font-size:11px;background:#0d1220;border:1px solid #1d2740;color:#a6b0c0;padding:2px 6px;border-radius:999px}
@@ -51,25 +51,35 @@
   <div class="wrap">
     <div class="grid">
       <div class="card">
-        <div class="drop" id="drop">
+        <div class="drop" id="drop" role="button" tabindex="0" aria-label="Drop images here or press Enter to browse">
           <p><strong>Drop images here</strong> or click to browse</p>
           <input id="file" type="file" accept="image/*" multiple class="hidden" />
-          <p class="muted">PNG, JPG, WebP, AVIF • processed locally</p>
+          <p class="muted">
+            PNG, JPG, WebP, AVIF, GIF, BMP, HEIC/HEIF, TIFF (where supported) • processed locally
+          </p>
         </div>
 
         <hr style="border:0;border-top:1px solid #20283a;margin:18px 0" />
 
         <div class="controls">
+          <!-- Resize toggle -->
+          <label class="row" style="align-items:center">
+            <input type="checkbox" id="enableResize" checked />
+            <span>Enable resizing</span>
+          </label>
+          <span></span>
+
           <label>Max width (px)
             <input type="number" id="maxWidth" min="64" step="16" value="1600" />
           </label>
           <label>Max height (px)
             <input type="number" id="maxHeight" min="64" step="16" value="1600" />
           </label>
+
           <label>Output format
             <select id="format">
-              <option value="webp">WebP</option>
-              <option value="avif">AVIF</option>
+              <option value="webp">WebP (small & fast)</option>
+              <option value="avif">AVIF (smallest)</option>
               <option value="jpeg">JPEG</option>
               <option value="png">PNG</option>
             </select>
@@ -78,14 +88,27 @@
             <input type="range" id="quality" min="1" max="100" value="82" />
             <span id="qualityVal">82%</span>
           </label>
+
           <label>Background removal
             <select id="bgMode">
-              <option value="people" selected>People (on-device)</option>
               <option value="none">Disabled</option>
+              <option value="people" selected>People (fast)</option>
+              <option value="people_refine">People + refine (best)</option>
             </select>
           </label>
-          <label>Canvas color (if not transparent)
+          <label>Matte strength (0–100)
+            <input type="range" id="matteStrength" min="0" max="100" value="70" />
+          </label>
+          <label>Edge feather (px)
+            <input type="range" id="edgeFeather" min="0" max="12" value="2" />
+          </label>
+
+          <label>Canvas color (for opaque output)
             <input type="color" id="canvasColor" value="#000000" />
+          </label>
+          <label class="row" style="align-items:center">
+            <input type="checkbox" id="forceOpaque" />
+            <span>Force opaque output (fill with canvas color)</span>
           </label>
         </div>
 
@@ -109,7 +132,8 @@
           <span class="muted" id="count">0 items</span>
         </div>
         <div class="bar" style="margin:10px 0 14px"><i id="prog"></i></div>
-        <div class="thumbs" id="thumbs"></div>
+        <div class="muted" id="sizeTotals">Original: 0 B → Optimized: 0 B</div>
+        <div class="thumbs" id="thumbs" style="margin-top:10px"></div>
       </div>
     </div>
   </div>
@@ -129,34 +153,103 @@
     const thumbs = $('thumbs');
     const prog = $('prog');
     const countEl = $('count');
+    const sizeTotals = $('sizeTotals');
+
+    const enableResize = $('enableResize');
     const maxWidth = $('maxWidth');
     const maxHeight = $('maxHeight');
     const formatSel = $('format');
     const quality = $('quality');
     const qualityVal = $('qualityVal');
     const bgMode = $('bgMode');
+    const matteStrength = $('matteStrength');
+    const edgeFeather = $('edgeFeather');
     const canvasColor = $('canvasColor');
+    const forceOpaque = $('forceOpaque');
 
     let files = [];
     let zip = null;
+    let totalOriginal = 0;
+    let totalOptimized = 0;
 
     // ---------- Helpers ----------
     quality.addEventListener('input', () => { qualityVal.textContent = quality.value + '%'; });
+    function bytes(n){
+      if (n < 1024) return n + ' B';
+      if (n < 1024*1024) return (n/1024).toFixed(1) + ' KB';
+      if (n < 1024*1024*1024) return (n/1024/1024).toFixed(1) + ' MB';
+      return (n/1024/1024/1024).toFixed(2) + ' GB';
+    }
+    function updateTotals(){
+      sizeTotals.textContent = `Original: ${bytes(totalOriginal)} → Optimized: ${bytes(totalOptimized)}${totalOptimized ? ` (${Math.max(0, (1 - totalOptimized/Math.max(1,totalOriginal))*100).toFixed(1)}% smaller)` : ''}`;
+    }
 
-    function supportsType(mime) {
+    enableResize.addEventListener('change', () => {
+      const dis = !enableResize.checked;
+      maxWidth.disabled = dis;
+      maxHeight.disabled = dis;
+    });
+
+    function extOK(name) {
+      // Broad cross-platform list (some may not decode; we'll verify)
+      return /\.(png|jpe?g|webp|avif|gif|bmp|heic|heif|tif|tiff|jfif|pjpeg|pjp)$/i.test(name);
+    }
+
+    async function canDecode(file) {
+      // Try ImageBitmap (fast fail) when available
+      if ('createImageBitmap' in window) {
+        try {
+          const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+          bmp.close?.();
+          return true;
+        } catch { /* fall through */ }
+      }
+      // Fallback: <img> decode attempt
+      try {
+        const url = URL.createObjectURL(file);
+        await new Promise((res, rej) => {
+          const img = new Image();
+          img.onload = () => { URL.revokeObjectURL(url); res(); };
+          img.onerror = () => { URL.revokeObjectURL(url); rej(); };
+          img.src = url;
+        });
+        return true;
+      } catch { return false; }
+    }
+
+    function supportsTypeViaCanvas(mime) {
       try {
         const c = document.createElement('canvas'); c.width = c.height = 2;
         return new Promise((res) => c.toBlob((b) => res(!!b), mime, 0.8));
       } catch { return Promise.resolve(false); }
     }
+    async function supportsType(mime) {
+      if ('ImageDecoder' in window && ImageDecoder.isTypeSupported) {
+        try { if (await ImageDecoder.isTypeSupported(mime)) return true; } catch {}
+      }
+      return supportsTypeViaCanvas(mime);
+    }
 
     function accept(items) {
-      const imgs = Array.from(items).filter(f => /^image\//.test(f.type) || /\.(png|jpe?g|webp|avif|heic|heif|gif|bmp)$/i.test(f.name));
-      if (!imgs.length) { alert('No images detected.'); return; }
-      files = files.concat(imgs);
-      countEl.textContent = files.length + ' items';
-      runBtn.disabled = files.length === 0;
-      renderQueue();
+      const candidates = Array.from(items).filter(f =>
+        /^image\//.test(f.type) || extOK(f.name)
+      );
+      if (!candidates.length) { alert('No images detected.'); return; }
+
+      (async () => {
+        const checks = await Promise.all(candidates.map(canDecode));
+        const decodables = candidates.filter((_, i) => checks[i]);
+        const rejected = candidates.length - decodables.length;
+        if (rejected) alert(`${rejected} file(s) skipped (format not supported by this browser).`);
+
+        files = files.concat(decodables);
+        totalOriginal += decodables.reduce((sum, f) => sum + (f.size || 0), 0);
+        updateTotals();
+
+        countEl.textContent = files.length + ' items';
+        runBtn.disabled = files.length === 0;
+        renderQueue();
+      })();
     }
 
     fileInput.addEventListener('change', (e) => accept(e.target.files));
@@ -167,22 +260,28 @@
     drop.addEventListener('dragleave', () => drop.style.borderColor = '#33415c');
     drop.addEventListener('drop', (e) => { drop.style.borderColor = '#33415c'; accept(e.dataTransfer.files); });
     drop.addEventListener('click', () => fileInput.click());
+    drop.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
 
     clearBtn.addEventListener('click', () => {
       files = [];
+      zip = null;
       thumbs.innerHTML = '';
       countEl.textContent = '0 items';
       runBtn.disabled = true;
       zipBtn.disabled = true;
       prog.style.width = '0%';
+      totalOriginal = 0;
+      totalOptimized = 0;
+      updateTotals();
     });
 
     function renderQueue() {
       let html = '';
       for (let i = 0; i < files.length; i++) {
+        const f = files[i];
         html += "<div class='thumb'>" +
           "<img id='img-" + i + "' alt='preview' />" +
-          "<div class='muted'>" + files[i].name + "</div>" +
+          "<div class='muted'>" + f.name + " • " + bytes(f.size || 0) + "</div>" +
           "<div class='muted' id='status-" + i + "'>Queued</div>" +
           "</div>";
       }
@@ -194,47 +293,43 @@
       });
     }
 
-    // ---------- Background removal (people) ----------
+    // ---------- Background removal (improved) ----------
     let selfieSeg = null;
+    let selfieResolve = null;
+
     (async function initSeg() {
       if (window.SelfieSegmentation) {
         selfieSeg = new SelfieSegmentation({ locateFile: (f) => "https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/" + f });
         selfieSeg.setOptions({ modelSelection: 1 });
-        if (typeof selfieSeg.initialize === 'function') {
-          try { await selfieSeg.initialize(); } catch(e) { console.warn('Segmentation init', e); }
-        }
+        try {
+          selfieSeg.onResults((res) => { if (selfieResolve) selfieResolve(res); });
+          if (typeof selfieSeg.initialize === 'function') await selfieSeg.initialize();
+        } catch(e) { console.warn('Segmentation init', e); }
       }
     })();
 
-    function removeBgCanvas(baseCanvas) {
-      return new Promise((resolve) => {
-        if (!selfieSeg) return resolve(baseCanvas);
-        const w = baseCanvas.width, h = baseCanvas.height;
-        const img = new Image();
-        img.onload = function () {
-          selfieSeg.onResults(function(res){
-            try {
-              const maskC = document.createElement('canvas'); maskC.width = w; maskC.height = h;
-              const mc = maskC.getContext('2d');
-              mc.drawImage(res.segmentationMask, 0, 0, w, h);
-              const mask = mc.getImageData(0,0,w,h);
-
-              const ctx = baseCanvas.getContext('2d');
-              const imgData = ctx.getImageData(0,0,w,h);
-              const p = imgData.data, m = mask.data; const t = 128;
-              for (let i=0;i<p.length;i+=4) { p[i+3] = (m[i] > t) ? 255 : 0; }
-              ctx.putImageData(imgData,0,0);
-              resolve(baseCanvas);
-            } catch (err) {
-              console.warn('Matte failed', err);
-              resolve(baseCanvas);
-            }
-          });
-          selfieSeg.send({ image: img });
-        };
-        img.onerror = function(){ resolve(baseCanvas); };
-        img.src = baseCanvas.toDataURL('image/png');
-      });
+    async function loadImageToCanvas(file) {
+      const c = document.createElement('canvas');
+      const ctx = c.getContext('2d', { willReadFrequently: true });
+      if ('createImageBitmap' in window) {
+        const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+        c.width = bmp.width; c.height = bmp.height;
+        ctx.drawImage(bmp, 0, 0);
+        bmp.close?.();
+      } else {
+        const url = URL.createObjectURL(file);
+        const img = await new Promise((resolve, reject) => {
+          const im = new Image();
+          im.onload = () => resolve(im);
+          im.onerror = (e) => reject(e);
+          im.src = url;
+        });
+        c.width = img.naturalWidth || img.width;
+        c.height = img.naturalHeight || img.height;
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+      }
+      return c;
     }
 
     function fitSize(w, h, maxW, maxH) {
@@ -242,21 +337,82 @@
       return { w: Math.max(1, Math.round(w * r)), h: Math.max(1, Math.round(h * r)) };
     }
 
-    function loadImage(file) {
-      return new Promise((resolve, reject) => {
-        const url = URL.createObjectURL(file);
-        const img = new Image();
-        img.onload = function(){ URL.revokeObjectURL(url); resolve(img); };
-        img.onerror = function(e){ URL.revokeObjectURL(url); reject(e); };
-        img.src = url;
-      });
+    function encodeCanvas(canvas, type, q) {
+      const mime = (type === 'jpeg') ? 'image/jpeg' :
+                   (type === 'png')  ? 'image/png'  :
+                   (type === 'avif') ? 'image/avif' : 'image/webp';
+      return new Promise((resolve) => canvas.toBlob((b) => resolve(b), mime, q));
     }
 
-    function encodeCanvas(canvas, type, q) {
-      var mime = (type === 'jpeg') ? 'image/jpeg' :
-                 (type === 'png')  ? 'image/png'  :
-                 (type === 'avif') ? 'image/avif' : 'image/webp';
-      return new Promise(function(resolve){ canvas.toBlob(function(b){ resolve(b); }, mime, q); });
+    // Core refine: threshold + gamma-like strength + feather blur
+    async function removeBgCanvas(baseCanvas) {
+      const mode = bgMode.value;
+      if (mode === 'none' || !selfieSeg) return baseCanvas;
+
+      // Run segmentation once from the canvas snapshot
+      const tempImg = new Image();
+      tempImg.src = baseCanvas.toDataURL('image/png');
+      await tempImg.decode();
+      const segRes = await new Promise((resolve) => { selfieResolve = resolve; selfieSeg.send({ image: tempImg }); });
+
+      const w = baseCanvas.width, h = baseCanvas.height;
+      // Read segmentation mask into a canvas
+      const maskC = document.createElement('canvas'); maskC.width = w; maskC.height = h;
+      const mc = maskC.getContext('2d');
+      mc.drawImage(segRes.segmentationMask, 0, 0, w, h);
+
+      // Optional feather blur using canvas filter (fast)
+      const featherPx = parseInt(edgeFeather.value, 10) || 0;
+      if (featherPx > 0) {
+        const blurC = document.createElement('canvas'); blurC.width = w; blurC.height = h;
+        const bc = blurC.getContext('2d');
+        bc.filter = `blur(${featherPx}px)`;
+        bc.drawImage(maskC, 0, 0, w, h);
+        // Copy back
+        mc.clearRect(0,0,w,h);
+        mc.drawImage(blurC, 0, 0);
+      }
+
+      const mask = mc.getImageData(0,0,w,h);
+      const ctx = baseCanvas.getContext('2d');
+      const imgData = ctx.getImageData(0,0,w,h);
+      const p = imgData.data, m = mask.data;
+
+      // Controls
+      const strength = Math.max(0, Math.min(100, parseInt(matteStrength.value, 10) || 0)) / 100; // 0..1
+      // Start from a conservative threshold; refined mode uses continuous alpha, fast mode uses hard threshold
+      const baseThresh = 110; // more conservative than 128
+      const hard = (mode === 'people');
+
+      for (let i = 0; i < p.length; i += 4) {
+        const v = m[i]; // grayscale
+        let alpha;
+        if (hard) {
+          // Hard threshold with small bias using strength
+          const t = baseThresh - Math.round(20 * strength); // lower threshold slightly with strength
+          alpha = (v > t) ? 255 : 0;
+        } else {
+          // Refined: continuous matte, gamma-like curve to bias foreground
+          // Normalize 0..1
+          let a = v / 255;
+          // Bias foreground: push mid values upward based on strength
+          const gamma = 1 - (0.5 * strength); // 1..0.5
+          a = Math.pow(a, gamma);
+          // Also trim near-background
+          const cut = 0.2 - (0.1 * strength); // 0.2..0.1
+          a = (a <= cut) ? 0 : (a >= 1 ? 1 : (a - cut) / (1 - cut));
+          alpha = Math.round(a * 255);
+        }
+        p[i + 3] = alpha;
+      }
+      ctx.putImageData(imgData, 0, 0);
+      return baseCanvas;
+    }
+
+    function uniqueName(zip, base, ext) {
+      let n = base, k = 1;
+      while (zip.file(`${n}.${ext}`)) n = `${base} (${k++})`;
+      return `${n}.${ext}`;
     }
 
     document.getElementById('runBtn').addEventListener('click', async function(){
@@ -265,67 +421,76 @@
       zipBtn.disabled = true;
       prog.style.width = '0%';
       zip = new JSZip();
+      totalOptimized = 0;
 
+      const resizeOn = enableResize.checked;
       const maxW = parseInt(maxWidth.value, 10);
       const maxH = parseInt(maxHeight.value, 10);
       let outFmt = formatSel.value;
       const q01 = parseInt(quality.value, 10) / 100;
-      const doBg = (bgMode.value === 'people');
 
       // If chosen format unsupported, fall back to PNG
-      var mimeWanted = (outFmt==='jpeg')?'image/jpeg':(outFmt==='png')?'image/png':(outFmt==='avif')?'image/avif':'image/webp';
-      var supported = await supportsType(mimeWanted);
+      const mimeWanted = (outFmt==='jpeg')?'image/jpeg':(outFmt==='png')?'image/png':(outFmt==='avif')?'image/avif':'image/webp';
+      const supported = await supportsType(mimeWanted);
       if (!supported) outFmt = 'png';
 
       let done = 0;
-      for (let i=0;i<files.length;i++){
+      for (let i = 0; i < files.length; i++) {
         const f = files[i];
-        const st = $('status-'+i);
+        const st = $('status-' + i);
         try {
-          st.textContent = 'Reading…';
-          const img = await loadImage(f);
+          st.textContent = 'Decoding…';
+          const work = await loadImageToCanvas(f);
 
-          // Work at source resolution for matte, then resize
-          const work = document.createElement('canvas');
-          work.width = img.naturalWidth || img.width;
-          work.height = img.naturalHeight || img.height;
-          const wc = work.getContext('2d');
-          wc.imageSmoothingQuality = 'high';
-          wc.drawImage(img, 0, 0);
-
-          if (doBg) {
+          if (bgMode.value !== 'none') {
             st.textContent = 'Removing background…';
             await removeBgCanvas(work);
           }
 
-          const size = fitSize(work.width, work.height, maxW, maxH);
-          const out = document.createElement('canvas');
-          out.width = size.w; out.height = size.h;
-          const oc = out.getContext('2d');
-          oc.imageSmoothingQuality = 'high';
-
-          // Fill if target is opaque (jpeg) or a color requested
-          const needsOpaque = (outFmt === 'jpeg');
-          if (needsOpaque) {
-            oc.fillStyle = canvasColor.value;
-            oc.fillRect(0,0,size.w,size.h);
+          // Resize if enabled
+          let out = work;
+          if (resizeOn) {
+            const size = fitSize(work.width, work.height, maxW, maxH);
+            if (size.w !== work.width || size.h !== work.height) {
+              out = document.createElement('canvas');
+              out.width = size.w; out.height = size.h;
+              const oc = out.getContext('2d');
+              oc.imageSmoothingEnabled = true;
+              oc.imageSmoothingQuality = 'high';
+              oc.drawImage(work, 0, 0, size.w, size.h);
+            }
           }
 
-          oc.drawImage(work, 0, 0, size.w, size.h);
+          // Composite for opaque outputs or when forcing opaque
+          const needsOpaque = (outFmt === 'jpeg') || forceOpaque.checked;
+          if (needsOpaque) {
+            const solid = document.createElement('canvas');
+            solid.width = out.width; solid.height = out.height;
+            const sc = solid.getContext('2d');
+            sc.fillStyle = canvasColor.value;
+            sc.fillRect(0, 0, solid.width, solid.height);
+            sc.drawImage(out, 0, 0);
+            out = solid;
+          }
 
           st.textContent = 'Encoding…';
           const blob = await encodeCanvas(out, outFmt, q01);
 
-          // Preserve original name but swap extension only if mime suggests a better one
+          // Extension from resulting blob.type
           let ext = outFmt;
           if (blob && blob.type) {
-            if (blob.type.indexOf('jpeg') >= 0) ext = 'jpg';
-            else if (blob.type.indexOf('png') >= 0) ext = 'png';
-            else if (blob.type.indexOf('webp') >= 0) ext = 'webp';
-            else if (blob.type.indexOf('avif') >= 0) ext = 'avif';
+            if (blob.type.includes('jpeg')) ext = 'jpg';
+            else if (blob.type.includes('png')) ext = 'png';
+            else if (blob.type.includes('webp')) ext = 'webp';
+            else if (blob.type.includes('avif')) ext = 'avif';
           }
-          const name = f.name.replace(/\.[^.]+$/, '') + '.' + ext;
-          zip.file(name, blob);
+
+          const base = f.name.replace(/\.[^.]+$/, '');
+          const finalName = uniqueName(zip, base, ext);
+          zip.file(finalName, blob);
+
+          totalOptimized += blob.size || 0;
+          updateTotals();
 
           st.textContent = 'Done';
         } catch (e) {
@@ -333,7 +498,9 @@
           st.textContent = 'Failed';
         } finally {
           done++;
-          prog.style.width = ((done/files.length)*100).toFixed(1) + '%';
+          prog.style.width = ((done / files.length) * 100).toFixed(1) + '%';
+          // Let the UI breathe
+          await new Promise(r => setTimeout(r, 0));
         }
       }
 
